@@ -1,0 +1,135 @@
+var temp_lat = '';
+var temp_lng = '';
+var map;
+var infowindow;
+getLocation();
+
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition);
+  } else {
+    temp_lat = 0.0; //set default lat value
+    temp_lng = 0.0; //set default lng value
+  }
+}
+
+function showPosition(position) {
+  temp_lat = position.coords.latitude;
+  temp_lng = position.coords.longitude;
+  initMap();
+}
+
+function initMap() {
+
+  var pyrmont = {
+    lat: temp_lat,
+    lng: temp_lng
+  };
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: pyrmont,
+    zoom: 15
+  });
+
+
+  infowindow = new google.maps.InfoWindow();
+
+
+  var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
+  var icons = {
+    parking: {
+      icon: iconBase + 'parking_lot_maps.png'
+    },
+    library: {
+      icon: iconBase + 'library_maps.png'
+    },
+    info: {
+      icon: iconBase + 'info-i_maps.png'
+    }
+  };
+  var features = [{
+    position: new google.maps.LatLng(pyrmont),
+    type: 'info'
+  }];
+  features.forEach(function(feature) {
+    var marker = new google.maps.Marker({
+      position: feature.position,
+      icon: icons[feature.type].icon,
+      map: map
+    });
+  });
+
+
+  var service = new google.maps.places.PlacesService(map);
+  service.nearbySearch({
+      location: pyrmont,
+      radius: 1000,
+      type: ['lodging']
+    },
+    callback);
+}
+var places = [];
+
+function callback(results, status) {
+  if (status === google.maps.places.PlacesServiceStatus.OK) {
+    for (var i = 0; i < results.length; i++) {
+      createMarker(results[i]);
+      document.getElementById('output').innerHTML = places[i] + "<br>" + document.getElementById('output').innerHTML;
+    }
+  }
+}
+
+function myFunction(loc) {
+
+
+  var str = location
+
+  var sln = str.length;
+
+  var latt = loc.indexOf("(");
+  var lngg = loc.indexOf(",");
+  var lat = loc.slice(latt + 1, latt + 7);
+  var lng = loc.slice(lngg + 2, lngg + 10);
+  var url = "http://google.com/maps?q=" + lat + "," + lng;
+  // http://maps.google.com/maps?q=24.197611,120.780512
+  window.url = url;
+  document.getElementById('output').innerHTML = loc.slice(0, latt) + "<button onclick=myFunction1(location)>Go here!</button>";
+  //+ str.slice(1,sln-1) ;
+  //    var btn = document.createElement("BUTTON");
+  //    document.getElementById('output').innerHTML=document.getElementById('output').innerHTML + btn;
+  alert(loc.slice(0, latt) + "\n\n To go to that location, click <Go here!>");
+  //window.open(url);
+}
+
+function myFunction1(loc) {
+  //var str = loc;
+  //var sln = str.length;
+  //var url = loc//"http://maps.google.com/" ;
+  window.open(url);
+
+}
+
+function createMarker(place) {
+
+  var placeLoc = place.geometry.location;
+
+  var marker = new google.maps.Marker({
+    map: map,
+    position: place.geometry.location
+  });
+  google.maps.event.addListener(marker, 'click',
+    function() {
+      infowindow.setContent(place.name + placeLoc);
+      var location = place.name + placeLoc;
+
+
+      //var lng1 = place.lng;
+      infowindow.open(map, this);
+      myFunction(location);
+    }
+  );
+  places.push(place.name + "<br>" + placeLoc + "<br>"); // + "			<button onclick=myFunction(location)>Go here!</button>");
+
+  //alert(places);
+  //alert(places.length)
+}
+marker1.setMap(map);
